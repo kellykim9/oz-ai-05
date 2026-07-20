@@ -1,0 +1,9 @@
+uvicorn
+fastapi
+alembic
+sqlalchemy
+asyncmy
+pymysql
+cryptography
+pydantic
+pydantic-settings
