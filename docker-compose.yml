@@ -1,0 +1,60 @@
+services:
+  fastapi:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    entrypoint: >
+      sh -c "
+      echo 'Waiting for MySQL to be fully ready...' &&
+      while ! python -c 'import socket; s = socket.socket(); s.connect((\"mysql\", 3306))' 2>/dev/null; do
+        sleep 1;
+      done &&
+      echo 'MySQL is up! Running migrations and starting server...' &&
+      python -m alembic -c alembic.ini upgrade head &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - static_volume:/app/app/static
+      - media_volume:/app/app/media
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=oz_database
+      - DB_USER=root
+      - DB_PASSWORD=1234
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - app-net
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    volumes:
+      - mysql_volume:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: oz_database
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p1234"]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+      start_period: 10s
+    networks:
+      - app-net
+
+volumes:
+  mysql_volume:
+  static_volume:
+  media_volume:
+
+networks:
+  app-net:
+    driver: bridge

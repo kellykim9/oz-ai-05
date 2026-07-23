@@ -1,0 +1,12 @@
+uvicorn
+fastapi
+alembic
+sqlalchemy
+asyncmy
+pymysql
+cryptography
+pydantic
+pydantic-settings
+email-validator
+passlib
+argon2-cffi
