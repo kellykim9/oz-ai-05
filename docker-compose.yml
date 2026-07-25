@@ -58,6 +58,22 @@ services:
     networks:
       - app-net
 
+  ai-worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    container_name: ai_worker
+    restart: always
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - .:/app
+    networks:
+      - app-net
+
 volumes:
   mysql_volume:
   static_volume:
